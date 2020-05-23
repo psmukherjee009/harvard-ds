@@ -1,0 +1,160 @@
+---
+title: "Predict Movie rating with MovieLens data"
+author: Partha Sarathi Mukherjee
+date: 5/12/2020
+output: pdf_document
+---
+# Executive Summary
+Predicting a movie rating has huge financial impact. A good predictive rating will mean that the movie should be
+released in a massive scale with a big upfront advertisement budget. So it is essential that we get rating with
+ high accuracy.
+
+The MovieLens data set is a comprehensive dataset thou for this illustration we will limit the dataset to 10 million.
+
+The dataset comprises of the following attributes
+
+ - Movie details like (MovieId, Title)
+
+ - Movie attributes like (Generes, timestamp)
+
+ - Movie viewers(userId)
+
+ - Movie ratings(rating)
+
+
+A movie can belong in 1 or more of 19 different Genre.
+
+Using the dataset provided, the objective is to build a machine learning model that can predict future movie ratings.
+
+Key steps performed to build movie rating predictor machine learning model are:-
+
+ 1. Data Visualization -- How the rating data is distributed among the attributes?
+
+ 2. Data Cleanup -- Bad and missing data are trimmed.
+
+ 3. Build Models -- Use Matrix Factorization to build recomendation models.
+
+ 4. Model Predictions -- Models are evaluated against Test sets
+
+ 5. Evaluate Models -- Target is to build a model with RMSE < 0.86490
+
+
+\pagebreak
+
+# Analysis
+There 2 methods succeeded in the original Netflix challenge
+
+ 1. Matrix Factorization
+
+ 2. Ensemble Model
+
+In this task we use Matrix factorization. It is better suited for recommendation system and gives better RMSE with fewer
+ variables.
+
+## Overall data distribution
+```{r loading-libs, message=FALSE}
+library(tidyverse)
+library(dplyr)
+```
+
+```{r data-stats, echo=F}
+load("../ml-10M100K/edx.Rda")
+print("Dimensions")
+dim(edx)
+print("Summary")
+str(edx)
+print("Summary of distinct users and movies")
+summarize(edx, users = n_distinct(userId), movies = n_distinct(movieId))
+```
+
+\pagebreak
+
+## Distribution of rating per movie
+```{r rating-per-movie, echo=F}
+edx %>%
+     dplyr::count(movieId) %>%
+     ggplot(aes(n)) +
+     geom_histogram(bins = 30, color = "black") +
+     scale_x_log10() +
+     ggtitle("Movies")
+```
+
+### Conclusion: Remove movies not rated by atleast 25 users.
+
+\pagebreak
+
+## Distribution of rating per user
+```{r rating-per-user, echo=F}
+edx %>%
+     dplyr::count(userId) %>%
+     ggplot(aes(n)) +
+     geom_histogram(bins = 30, color = "black") +
+     scale_x_log10() +
+     ggtitle("Users")
+
+```
+
+### Conclusion: Remove users not rating more than 25 movies.
+
+
+## Data Abnormality
+On denormalization of the data and looking into all the genre, we found that only one movie had no rating (Pull My Daisy
+ (1958)). The movie id is 8606.
+
+### Conclusion: Remove movie "Pull My Daisy" (1958) from the dataset.
+
+\pagebreak
+
+# Data Cleaning
+Based on above conclusions, data is cleaned as
+
+1. Remove users rating less than 25 movies -- Removed 7551 users. 155124 movies removed. 2.29% decrease
+
+2. Remove movies not rated by atleast 25 users + movie id 8606 -- Removed 30576 movies. 0.4 % decrease.
+
+Cleaned Data now looks like:
+```{r cleaned-data-stats, echo=F}
+load("../ml-10M100K/edx_clean.Rda")
+print("Dimensions")
+dim(edx_clean)
+print("Summary")
+str(edx_clean)
+```
+
+\pagebreak
+
+# Modeling -- Martix Factorization
+Steps to build Matrix Factorization model as:-
+
+## Step 1: Average Movie Rating
+Build an model which predicts the same rating (average movie rating) regardless of the user.
+
+## Step 2: Add Movie Effect on Rating
+Compute the movie effect based on the average difference between the actual rating and the average rating.
+Build a model with average movie rating from step 1 and movie effect value.
+
+## Step 3: Add User Effect on Rating
+Compute the user effect based on the average difference between actual rating and the sum of average and movie rating obtained in step 2.
+Build a model with average movie rating from step 1, movie effect value from step 2 and user effect from this step.
+
+# Result
+Using the above 3 steps, the final model RMSE dropped to 0.862.
+
+Best performance requirement for this problem is achieved (RMSE < 0.86490).
+
+```{r rmse-results, echo=F}
+load("../ml-10M100K/rmse_results.Rda")
+knitr::kable(rmse_results)
+```
+
+# Conclusion
+The Matrix Factorization method is the best approach to recommendation systems.
+
+More steps can added to improve the solution like
+
+ 1. User's Age: Amount of time user is in system from user's first rating,
+ 2. Movie's Age: Amount of time passed from the first rating.
+ 3. Movie's Expectation: How many people already rated the movie
+
+ and so on...
+
