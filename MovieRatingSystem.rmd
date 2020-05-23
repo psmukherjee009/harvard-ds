@@ -58,7 +58,7 @@ library(dplyr)
 ```
 
 ```{r data-stats, echo=F}
-load("../ml-10M100K/edx.Rda")
+load("ml-10M100K/edx.Rda")
 print("Dimensions")
 dim(edx)
 print("Summary")
@@ -114,7 +114,7 @@ Based on above conclusions, data is cleaned as
 
 Cleaned Data now looks like:
 ```{r cleaned-data-stats, echo=F}
-load("../ml-10M100K/edx_clean.Rda")
+load("ml-10M100K/edx_clean.Rda")
 print("Dimensions")
 dim(edx_clean)
 print("Summary")
@@ -143,7 +143,7 @@ Using the above 3 steps, the final model RMSE dropped to 0.862.
 Best performance requirement for this problem is achieved (RMSE < 0.86490).
 
 ```{r rmse-results, echo=F}
-load("../ml-10M100K/rmse_results.Rda")
+load("ml-10M100K/rmse_results.Rda")
 knitr::kable(rmse_results)
 ```
 
